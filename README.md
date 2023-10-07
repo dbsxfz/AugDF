@@ -1,9 +1,8 @@
 # AugDF
-Code for the article 'Improve Deep Forest with Learnable Layerwise Augmentation Policy Schedules' submitted to ICASSP 2024.
+This repository hosts the code for the paper titled 'Improving Deep Forest with Learnable Layerwise Augmentation Policy Schedule', submitted to ICASSP 2024.
 
-Arxiv preprint version available at https://arxiv.org/abs/2309.09030v1 .
+Arxiv preprint version is available at https://arxiv.org/abs/2309.09030v1.
 
-All code will be released before 2023.10.7 (partly finished).
+The core implementation is now accessible, with the repository currently undergoing reorganization for enhanced clarity and usability.
 
-The code for the comparative experiment (data augmentation for hiDF, gcforestcs, mdDF) will be released before 10.10.
-
+Further updates, including trials of parallel computation for acceleration and comparative experiments, will be released soon.
