@@ -22,7 +22,7 @@ The core libraries utilized in our implementation are outlined below. Some of th
 | py-boost            | 0.4.3   |
 | autogluon-tabular   | 0.8.2   |
 
-## Hyper-Parameters
+## Hyper-Parameters Settings
 ### Time Limit for AutoGluon-Tabular
 A time constraint is set for AutoGluon-Tabular models training: 30 minutes for datasets with less than 100k samples, and 60 minutes for larger datasets. The computation is performed on a single RTX 4090 GPU.
 
