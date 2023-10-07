@@ -40,7 +40,7 @@ def generate_combinations(j,k,count):
 
 
 class aug_DF:
-    def __init__(self, classifier,X_train, y_train, X_test, y_test, gpu_id, num_classes, max_layer=15, aug_type='cutmix'):
+    def __init__(self, classifier,X_train, y_train, X_test, y_test, gpu_id, num_classes, max_layer=15, aug_type='cutmix',num_df=8):
         self.gpu_id = gpu_id
         self.num_classes=num_classes
         self.classifier = classifier
@@ -51,7 +51,7 @@ class aug_DF:
         self.acc_list=[]
         self.policy_list=[]
         self.best_df_index=0
-                
+        self.num_df=num_df       
         self.means = np.mean(X_train, axis=0)
         self.stds = np.std(X_train, axis=0)
         self.aug_type = aug_type
@@ -63,7 +63,7 @@ class aug_DF:
         weights = [w / sum(weights) for w in weights]
         self.feature_weights = weights
         
-        for i in range(8):   
+        for i in range(self.num_df):   
             df = gcForest(classifier = self.classifier, encoder=self.encoder, num_estimator=100, num_forests=1, max_features=0.2, gpu_id = self.gpu_id, means=self.means, std=self.stds,
                         num_classes=self.num_classes, n_fold=5, max_layer=15, extend=1, weights = self.feature_weights, aug_type = self.aug_type, aug_prob=0.0, aug_mag = 0.0)
             df.load_data(X_train, y_train, X_test, y_test)
@@ -93,12 +93,12 @@ class aug_DF:
     
     def renew_policy(self):
         if self.current_layer==0:
-            new_policy=self.generate_policy(7)
+            new_policy=self.generate_policy(self.num_df-1)
             self.policy_list.extend(new_policy)
         else:
-            new_policy=self.generate_policy(4)
-            ind = np.argpartition(self.acc_list, 4)[:4]
-            for i in range(4):
+            new_policy=self.generate_policy(int(self.num_df/2))
+            ind = np.argpartition(self.acc_list, int(self.num_df/2))[:int(self.num_df/2)]
+            for i in range(int(self.num_df/2)):
                 self.policy_list[ind[i]]=new_policy[i]
                 #self.df_list[ind[i]]=copy.copy(self.df_list[self.best_df_index])
                 self.df_list[ind[i]]=copy.deepcopy(self.df_list[self.best_df_index])
@@ -106,14 +106,14 @@ class aug_DF:
     def train_augDF(df, policy):
         return df.train_by_layer_main(policy)
                     
-    def train_8_augDF_by_layer(self):
+    def train_augDF_by_layer(self):
         self.renew_policy()
         temp_acc_list=[]
         temp_test_list=[]
         
         tasks = []
         
-        for i in range(8): 
+        for i in range(self.num_df): 
             print("model " + str(i))
             '''
             temp_acc=self.df_list[i].train_by_layer(self.policy_list[i])
@@ -152,7 +152,7 @@ class aug_DF:
         #self.policy_list.append(self.best_policy)
         for i in range(self.max_layer):
             print("layer " +str(i))
-            self.train_8_augDF_by_layer()
+            self.train_augDF_by_layer()
         self.df_list[self.best_df_index].get_best_acc_of_all_layer()
         print(self.df_list[self.best_df_index].aug_policy_schedule)
         return self.df_list[self.best_df_index].aug_policy_schedule

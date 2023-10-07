@@ -1,7 +1,7 @@
 from layer import *
 #from layer_light_rand import *
 import ray
-
+from data.dataset import *
 #types = ['erase', 'noise']
 eprobs = [0, 0.05, 0.1, 0.2, 0.3, 0.5, 0.6, 0.7, 1.0]
 emags = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7]#0.05, 
@@ -10,8 +10,8 @@ nmags = [0.05, 0.1, 0.2, 0.3, 0.5]
 
 class gcForest:
     def __init__(self, classifier, num_estimator, encoder, num_forests, num_classes, means, std, max_layer=100, 
-                max_depth=31, max_features=0.1, n_fold=5, min_samples_leaf=1, sample_weight=None, gpu_id=3, random_state=42, weights=[None],
-                purity_function="gini" , bootstrap=True, parallel=True, num_threads=-1, extend=1, aug_type='erase', aug_prob=0.0, aug_mag = 0.0 ):
+                max_depth=31, max_features=0.1, n_fold=5, min_samples_leaf=1, sample_weight=None, gpu_id=0, random_state=42, weights=[None],
+                purity_function="gini" , bootstrap=True, parallel=True, num_threads=-1, extend=1, aug_type='erase', aug_prob=0.0, aug_mag = 0.0,aug_policy_schedule=[] ):
         self.gpu_id = gpu_id
         self.classifier = classifier
         self.encoder = encoder
@@ -47,17 +47,18 @@ class gcForest:
         self.best_test_acc = 0
         
         self.kf_N = 5
-        self.kf_val = StratifiedKFold( self.kf_N, shuffle=True, random_state=42)
+        self.kf_val = StratifiedKFold( self.kf_N, shuffle=True, random_state=random_state)#default as 42
         
         self.val_index_list = []
         self.train_index_list = []
 
-        self.aug_policy_schedule = []
+        self.aug_policy_schedule = aug_policy_schedule
                       
     def load_data(self, train_data, train_label, X_test, y_test):
         
         num_classes = int(np.max(train_label) + 1)
         if( num_classes != self.num_classes ):
+            print("num_classes is"+str(num_classes)+", while given num_classes is "+str(self.num_classes)+".")
             raise Exception("init num_classes not equal to actual num_classes")
         
         self.current_train_data = train_data
@@ -96,7 +97,7 @@ class gcForest:
         temp_val_acc = compute_accuracy(train_label, val_prob)
         temp_test_acc = compute_accuracy(test_label, test_prob)
         return [temp_val_acc, temp_test_acc, val_prob, val_stack, test_prob, test_stack, layer, mean_weight]
-
+    
     def get_best_policy(self,train_data, train_label, X_test, y_test):
 
         layer_index = self.current_layer_index
@@ -134,6 +135,38 @@ class gcForest:
         kf = StratifiedKFold( self.n_fold, shuffle=True, random_state=self.random_state + self.current_layer_index)
         return self.try_one_time_all(self.current_train_data, self.current_train_label, self.current_test_data, self.current_test_label, prob=best_policy[1], mag=best_policy[2], kf=kf)
     
+    def fit(self,train_data, train_label):
+        self.current_train_data = train_data
+        self.current_train_label = train_label
+        self.num_classes = int(np.max(train_label) + 1)
+        self.back_train_data = train_data
+        self.back_train_label = train_label
+        self.num_features = train_data.shape[1]
+
+        if len(self.aug_policy_schedule)==self.max_layer:
+            for i in range(self.max_layer):
+                self.fit_one_layer(self.aug_policy_schedule[i])
+        else:
+            print("no enough aug_policy_schedule for max_layer")
+            
+    def fit_one_layer(self,best_policy):
+        layer_index=self.current_layer_index
+        kf = StratifiedKFold( self.n_fold, shuffle=True, random_state=self.random_state + self.current_layer_index)
+        val_prob, val_stack, layer, mean_weights = train_KfoldWarpper(self, train_data=self.current_train_data, train_label=self.current_train_label, prob=best_policy[1], mag=best_policy[2], kf=kf)
+        temp_val_acc = compute_accuracy(self.current_train_label, val_prob)
+        self.feature_weights = mean_weights
+        if self.num_classes == 2:
+            val_stack = val_stack[:, 0::2]
+        self.current_train_data = np.concatenate([self.back_train_data, val_stack],axis=1)
+        print("layer index:{}".format( str(layer_index)) )
+        print("val  acc:{} ".format( str(temp_val_acc)) )       
+        if temp_val_acc >= self.best_val_acc:
+            self.best_val_acc = temp_val_acc
+            self.best_layer_index = layer_index        
+        self.current_layer_index = self.current_layer_index + 1
+        self.model.append(layer)
+        return temp_val_acc
+            
     def train_by_layer_other(self, best_policy, train_result):
         self.aug_policy_schedule.append(['layer: '+str(self.current_layer_index), best_policy[1], best_policy[2]])
         
@@ -185,10 +218,9 @@ class gcForest:
         print("best layer index "+str(self.best_layer_index))
         print("best test acc "+str(self.best_test_acc))
 
-    def predict(self, test_data, y_test, ensemble_layer=1):
+    def score(self, test_data, y_test, ensemble_layer=1):
         test_data_new = test_data.copy()
-        
-        ensemble_prob = []
+        ensemble_prob = 0
 
         layer_index = 0
         for layer in self.model:
@@ -201,11 +233,39 @@ class gcForest:
             print('test acc: ',compute_accuracy(y_test, test_prob))
 
             test_data_new = np.concatenate([test_data, test_stack], axis=1)
-            
-            if layer_index >= ensemble_layer:
-                ensemble_prob.append(test_prob)
-                print('ensemble acc: ',compute_accuracy(y_test, np.array(ensemble_prob).reshape(-1,1) / (layer_index + 1 - ensemble_layer)))
+            if layer_index == ensemble_layer:
+                self.current_ensemble_prob = test_prob
+            if layer_index > ensemble_layer:
+                self.current_ensemble_prob = np.copy(self.current_ensemble_prob)
+                self.current_ensemble_prob += test_prob
+            ensemble_prob = self.current_ensemble_prob / (layer_index + 1)
+            print('ensemble acc: ',compute_accuracy(y_test, ensemble_prob ))
             layer_index = layer_index + 1
         
-        return np.argmax(test_prob, axis=1)
+        return np.argmax(ensemble_prob, axis=1)
+    
+    # this only provide final result instead of intermediate result
+    def predict(self,test_data,ensemble_layer=1):
+        test_data_new = test_data.copy()
+        
+        ensemble_prob = 0
+
+        layer_index = 0
+        for layer in self.model:
+            print('layer ',layer_index)
+            test_prob, test_stack = predict_KfoldWarpper(self, layer, test_data_new)
+            
+            if self.num_classes == 2:
+                test_stack = test_stack[:, 0::2]
+            test_data_new = np.concatenate([test_data, test_stack], axis=1)
+            if layer_index == ensemble_layer:
+                self.current_ensemble_prob = test_prob
+            if layer_index > ensemble_layer:
+                self.current_ensemble_prob = np.copy(self.current_ensemble_prob)
+                self.current_ensemble_prob += test_prob
+            
+            ensemble_prob = self.current_ensemble_prob / (layer_index + 1)
+            layer_index = layer_index + 1
+        return np.argmax(ensemble_prob, axis=1)
+
     

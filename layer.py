@@ -164,6 +164,7 @@ def train_KfoldWarpper(self, train_data, train_label, prob, mag, kf):
         X_val = train_data[test_index, :]
         
         if prob > 0 and mag > 0:
+            # no implementation of random_erase
             if self.aug_type == 'erase':
                 X_train, idx = random_erase(deepcopy(X_train), means=None, prob=prob, mag=mag, k=self.num_features, 
                             label=deepcopy(y_train), layer_index=self.current_layer_index)#, predictor=self.predict_df
