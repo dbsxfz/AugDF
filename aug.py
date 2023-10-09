@@ -186,12 +186,17 @@ if __name__ == '__main__':
     parser.add_argument('--max_layer', type=int, default=15, help='Max layer depth')
     parser.add_argument('--gpu_id', type=int, default=0, help='GPU ID')
     parser.add_argument('--classifier', type=str, default='sketch', help='Base classifier')
+    parser.add_argument('--num_forests', type=int, default=1, help='Number of forests')
+    parser.add_argument('--num_estimator', type=int, default=100, help='Number of estimators')
     args = parser.parse_args()   
     if args.use_ray:
         ray.init(ignore_reinit_error=True)
     X_train, y_train, X_test, y_test=get_data(args.dataset)
     num_classes = int(np.max(y_train) + 1)
-    aug=aug_DF(classifier=args.classifier,num_classes=num_classes, max_layer=args.max_layer, gpu_id = args.gpu_id, aug_type=args.aug_type,ray=args.use_ray,max_features=args.max_features,random_state=args.random_state)
+    aug=aug_DF(classifier=args.classifier,num_classes=num_classes,\
+        max_layer=args.max_layer, gpu_id = args.gpu_id, aug_type=args.aug_type,ray=args.use_ray,\
+        max_features=args.max_features,random_state=args.random_state,\
+        num_forests=args.num_forests,num_estimator=args.num_estimator)
     aug_policy_schedule = aug.fit(X_train, y_train)
     if args.use_ray:
         ray.shutdown()
