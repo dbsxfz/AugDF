@@ -1,6 +1,5 @@
 from py_boost import GradientBoosting
 from sklearn.model_selection import KFold, StratifiedKFold
-
 import math
 import numpy as np
 from sklearn import preprocessing
@@ -10,7 +9,6 @@ from sklearn.metrics import accuracy_score
 from copy import deepcopy
 
 import os
-
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
