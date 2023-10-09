@@ -1,0 +1,73 @@
+layer index:0
+val  acc:99.88965889516007 
+layer index:1
+val  acc:99.8793392234844 
+layer index:2
+val  acc:99.86346280552182 
+layer index:3
+val  acc:99.86187516372556 
+layer index:4
+val  acc:99.86028752192931 
+layer index:5
+val  acc:99.86425662641994 
+layer index:6
+val  acc:99.86663808911433 
+layer index:7
+val  acc:99.8579060592349 
+layer index:8
+val  acc:99.85314313384615 
+layer index:9
+val  acc:99.84996785025363 
+layer index:10
+val  acc:99.85711223833678 
+layer index:11
+val  acc:99.84520492486484 
+layer index:12
+val  acc:99.84520492486484 
+layer index:13
+val  acc:99.8491740293555 
+layer index:14
+val  acc:99.84282346217046 
+layer  0
+test acc:  76.04240596167494
+layer  1
+test acc:  77.92760823278921
+layer  2
+test acc:  78.82806955287438
+ensemble acc:  78.32682753726047
+layer  3
+test acc:  78.28690560681333
+ensemble acc:  78.46433640880058
+layer  4
+test acc:  79.20067423704755
+ensemble acc:  78.63733144073811
+layer  5
+test acc:  79.19180269694819
+ensemble acc:  78.95670688431512
+layer  6
+test acc:  79.59545777146913
+ensemble acc:  79.24946770759404
+layer  7
+test acc:  78.59740951029099
+ensemble acc:  79.3026969481902
+layer  8
+test acc:  79.76845280340667
+ensemble acc:  79.43133427963093
+layer  9
+test acc:  79.27164655784244
+ensemble acc:  79.5111781405252
+layer  10
+test acc:  79.29382540809084
+ensemble acc:  79.4889992902768
+layer  11
+test acc:  79.01437189496096
+ensemble acc:  79.45794889992904
+layer  12
+test acc:  78.72604684173172
+ensemble acc:  79.41359119943222
+layer  13
+test acc:  78.52200141944643
+ensemble acc:  79.35592618878637
+layer  14
+test acc:  78.95227111426544
+ensemble acc:  79.29826117814052
