@@ -7,7 +7,8 @@ Arxiv preprint version is available at https://arxiv.org/abs/2309.09030v1.
 The core implementation is now accessible, with the repository currently undergoing reorganization for enhanced clarity and usability.
 
 Further updates, including trials of parallel computation for acceleration and comparative experiments, will be released soon.
-
+## Usage
+In order to search for augmentation policies and directly employ them, you will need to utilize the `aug.py` file and the `gcforest.py` file, respectively. Please refer to the `run.sh` script for specific commands and parameter configurations. Detailed instructions for using each function can be found in the `example.ipynb` file. These instructions provide APIs similar to those of sklearn, including functions like `fit`, `predict`, and `predict_proba`.
 ## Dependencies
 The core libraries utilized in our implementation are outlined below. Some of them, i.e., deep-forest and autogluon-tabular, are used solely for benchmarking (irrelevant to the implemention of AugDF). We recommend the use of multiple virtual environments to manage potential conflicts seamlessly.
 
