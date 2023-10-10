@@ -42,9 +42,9 @@ def cutmix(data, means, prob, mag, k, label, layer_index, num_classes, weights):
     for i, class_index in enumerate(class_indices):
         sample_indices[class_index].append(i)
     
-    # 对每条数据以prob为概率做扰动
+    # perturbate instances with probability parameter 'prob'
     rand_prob = np.random.random(data.shape[0])
-    # 选取符合概率条件的行
+    # select instances under the probability condition
     selected_rows_idx = np.where(rand_prob < prob)
     num_selected = selected_rows_idx[0].shape[0]
     
@@ -57,12 +57,11 @@ def cutmix(data, means, prob, mag, k, label, layer_index, num_classes, weights):
     y_extend = np.zeros((num_selected, num_classes))
 
     for iter in range(1):
-        # 从beta分布中采样得到lamda, 随机选lam*原始特征数个特征列做增强
+        # sample λ from a Beta distribution, randomly select λ * original feature columns for augmentation
         lam = np.random.beta(mag, mag)
         target = list(range(data.shape[1]))
         #target = list(range(k))
         random.shuffle(target)
-        # 让选取的特征数最少为原始特征数的1 / 4，防止追加原样本或与原样本过于类似
         #tmp = np.maximum(1, (int)(lam * data.shape[1]))
         if k < 100:
             tmp = np.maximum((int)(k / 5), (int)(lam * k))
@@ -103,14 +102,15 @@ def compute_accuracy(label, predict):
     acc = np.sum(test_copy == label_copy) * 1.0 / len(label_copy) * 100
     return acc
 
-# 拿到一份训练数据，并显式额外拿到一份验证数据，自己不做任何划分
-# num_forests与fold无关，一个森林（可能内部是好几个）会占一组val_concatenate的格子
-# 返回用来计算验证准确率的平均单层输出（forests的平均）以及用来占格子的未平均验证输出（只对fold平均，不对forest平均）
+# Obtain a trainset and explicitly an additional validation set (no built-in divisions in this function)
+# num_forests is unrelated to 'fold', a forest (possibly several forests) will occupy a slot in val_concatenate
+# Returns the averaged single-layer output (average of forests) for calculating validation accuracy, and the unaveraged validation output (averaged over folds, not over forests)
 def train_one_layer(self, train_data, train_label, val_data):
     layer = []
     weight = np.zeros([self.num_forests, train_data.shape[1]])
     val_prob = np.zeros([self.num_forests, val_data.shape[0], self.num_classes])
-    
+
+    # a trial of learning rate schedule
     if self.current_layer_index < 5:
         learning_rate = 0.3
     elif self.current_layer_index >= 5 and self.current_layer_index < 10:
@@ -141,8 +141,8 @@ def predict_one_layer(self, layer, test_data):
     predict_concatenate = predict_concatenate.reshape(predict_concatenate.shape[0], -1)
     return [predict_avg, predict_concatenate]
 
-# 对于每一层实际拿到的数据，层内划分fold
-# 返回的分别是层内五折交叉验证结果，以及用于占位的概率列，均与输入数据行数相同
+# For the actual data obtained for each layer, divide into folds within the layer
+# Returns the intra-layer cross-validation results, the probability columns, both with the same number of rows as the input
 def train_KfoldWarpper(self, train_data, train_label, prob, mag, kf):
     KfoldWarpper = []
     mean_weights = np.empty([self.n_fold, train_data.shape[1]])
@@ -183,7 +183,7 @@ def train_KfoldWarpper(self, train_data, train_label, prob, mag, kf):
     mean_weight = np.mean(mean_weights, axis = 0)
     return val_prob, val_prob_concatenate, KfoldWarpper, mean_weight
 
-# 对test得到输出与概率列，不同的是所有数据的预测均由所有fold的森林共同给出
+# Obtain output and probability columns for the test set, with the distinction that predictions for all data are jointly provided by forests from all folds
 def predict_KfoldWarpper(self, KfoldWarpper, test_data):
     test_prob = np.zeros([test_data.shape[0], self.num_classes])
     test_prob_concatenate = np.zeros([test_data.shape[0], self.num_forests * self.num_classes])
