@@ -13,11 +13,11 @@ import argparse
 from hyperparameters import *
 # need replace eporbs and emags
 def generate_combinations(j,k,count):
-    index1 = eprobs.index(j)  # 获取第一个列表中指定元素的索引
-    index2 = emags.index(k)  # 获取第二个列表中指定元素的索引
+    index1 = eprobs.index(j) 
+    index2 = emags.index(k)  
     
-    combinations = set()  # 存储不同组合的集合
-    combinations.add((j, k))  # 将指定的元素组合放入集合中
+    combinations = set()  
+    combinations.add((j, k))  
     while len(combinations) < count+1:
         weights = []
         for j_index in range(len(eprobs)):
@@ -25,18 +25,17 @@ def generate_combinations(j,k,count):
                 # print(j)
                 distance1 = abs(j_index - index1)
                 distance2 = abs(k_index - index2)
-                weight = 1 / (distance1 + distance2 + 1)  # 计算权重
+                weight = 1 / (distance1 + distance2 + 1)  
                 weights.append(weight)
         
-        # 根据权重选择一个索引对
         random_index = random.choices(range(len(weights)), weights=weights)[0]
-        random_index1 = random_index // len(emags)  # 计算第一个列表的索引
-        random_index2 = random_index % len(emags)  # 计算第二个列表的索引
+        random_index1 = random_index // len(emags)  
+        random_index2 = random_index % len(emags)  
         
-        combination = (eprobs[random_index1], emags[random_index2])  # 组合元素
-        combinations.add(combination)  # 将组合添加到集合中
+        combination = (eprobs[random_index1], emags[random_index2])  
+        combinations.add(combination)  
     
-    combinations.remove((j, k))  # 删除输入元素构成的组合
+    combinations.remove((j, k))  
     return list(combinations)
 
 
@@ -66,11 +65,11 @@ class aug_DF:
             self.aug_mag_list = emags
      
     def generate_policy(self,policy_count):
-        index1 = self.aug_prob_list.index(self.best_policy[1])  # 获取第一个列表中指定元素的索引
-        index2 = self.aug_mag_list.index(self.best_policy[2])  # 获取第二个列表中指定元素的索引
+        index1 = self.aug_prob_list.index(self.best_policy[1]) 
+        index2 = self.aug_mag_list.index(self.best_policy[2])  
         
-        combinations = set()  # 存储不同组合的集合
-        combinations.add((self.aug_type,self.best_policy[1], self.best_policy[2]))  # 将指定的元素组合放入集合中
+        combinations = set()  
+        combinations.add((self.aug_type,self.best_policy[1], self.best_policy[2])) 
         while len(combinations) < policy_count+1:
             weights = []
             for j_index in range(len(self.aug_prob_list)):
@@ -78,18 +77,17 @@ class aug_DF:
                     # print(j)
                     distance1 = abs(j_index - index1)
                     distance2 = abs(k_index - index2)
-                    weight = 1 / (distance1 + distance2 + 1)  # 计算权重
+                    weight = 1 / (distance1 + distance2 + 1)  
                     weights.append(weight)
             
-            # 根据权重选择一个索引对
             random_index = random.choices(range(len(weights)), weights=weights)[0]
-            random_index1 = random_index // len(self.aug_mag_list)  # 计算第一个列表的索引
-            random_index2 = random_index % len(self.aug_mag_list)  # 计算第二个列表的索引
+            random_index1 = random_index // len(self.aug_mag_list)  
+            random_index2 = random_index % len(self.aug_mag_list)  
             
-            combination = (self.aug_type,self.aug_prob_list[random_index1], self.aug_mag_list[random_index2])  # 组合元素
-            combinations.add(combination)  # 将组合添加到集合中
+            combination = (self.aug_type,self.aug_prob_list[random_index1], self.aug_mag_list[random_index2])  
+            combinations.add(combination)  
         
-        combinations.remove((self.aug_type,self.best_policy[1], self.best_policy[2]))  # 删除输入元素构成的组合
+        combinations.remove((self.aug_type,self.best_policy[1], self.best_policy[2]))  
         print(combinations)
         return list(combinations)
     
