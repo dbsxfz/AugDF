@@ -37,15 +37,6 @@ It is noteworthy that the parameter 'max_features' plays a critical role and can
 
 The vanilla Deep Forest employs Random Forest as its base learners, which traditionally use a low default column subsampling rate (often set to sqrt(n), n is the number of features). This has been widely validated to effectively mitigate the issues of overfitting and loss of diversity among base learners. Unfortunately, popular implementations of Gradient Boosting Decision Trees (GBDT), such as XGBoost, LightGBM, and CatBoost, do not set column subsampling by default due to the much shallower trees in boosting algorithms. Using these GBDT algorithms directly within the Deep Forest framework tends to result in severe overfitting. We speculate that this is one reason why Deep Forest and GBDT technologies have developed somewhat orthogonally, with scant literature successfully employing GBDT as base learners in Deep Forests. A more formal analysis of this phenomenon may appear in an extended version of our paper and is considered a topic for future work. Should the initial insights outlined in this document prove valuable to your research or implementation, we would be deeply honored if you could cite both the current version of our paper and this repository.
 
-## Citation
-@misc{dbsxfz,
-  author = {Hongyu Zhu, Sichu Liang},  % Replace with the actual name if available
-  title = {AugDF},
-  year = {2023},
-  publisher = {GitHub},
-  journal = {GitHub repository},
-  howpublished = {\url{https://github.com/dbsxfz/AugDF}}
-}
 
 
 
