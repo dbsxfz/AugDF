@@ -10,7 +10,7 @@ Further updates, including trials of parallel computation for acceleration and c
 ## Usage
 To perform policy schedule learning or directly employ the learned schedules, you could utilize the `aug.py` file and the `gcforest.py` file, respectively. Please refer to the `run.sh` script for specific commands and parameter configurations. Detailed instructions for using each function can be found in the `example.ipynb` file. These instructions provide APIs similar to those of sklearn, including functions like `fit`, `predict`, and `predict_proba`.
 ## Dependencies
-The core libraries utilized in our implementation are outlined below. Some of them, i.e., deep-forest and autogluon-tabular, are used solely for benchmarking (irrelevant to the implemention of AugDF). We recommend the use of multiple virtual environments to manage potential conflicts seamlessly.
+The core libraries utilized in our implementation and comparative studies are outlined below. Some of them, i.e., deep-forest and autogluon-tabular, are used solely for benchmarking (irrelevant to the implemention of AugDF). We recommend the use of multiple virtual environments to manage potential conflicts seamlessly.
 
 | Library             | Version |
 |---------------------|---------|
