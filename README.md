@@ -48,8 +48,7 @@ title = {AugDF},
 year = {2023},
 publisher = {GitHub},
 journal = {GitHub repository},
-howpublished = {\url{https://github.com/dbsxfz/AugDF}},
-accessed = {Insert the date you accessed this repository}
+howpublished = {\url{https://github.com/dbsxfz/AugDF}}
 }
 ```
 
